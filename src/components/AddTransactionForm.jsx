@@ -1,23 +1,62 @@
 
-import { useState , useEffect} from 'react';
+import { useForm } from 'react-hook-form';
+
+
+ 
 
 export default function AddTransactionForm({places, onSaveTransaction }) {
 
-  const [user, setUser] = useState('');
-  const [date, setDate] = useState(new Date());
-  const [place, setPlace] = useState('');
-  const [amount, setAmount] = useState(0);
 
- console.log(onSaveTransaction);
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("saving");
-    onSaveTransaction(user, place, amount, date);
-    console.log("saving after");
-    setUser('');
-    setDate(new Date());
-    setPlace('');
-    setAmount(0);
+	const {register, handleSubmit, formState: { errors }, reset} = useForm();
+
+  
+const LabelInput = ({ label , type , defaultValue, validation, ...rest }) => {
+	return (
+	<div className='col-span-6 sm:col-span-3'>
+	<label
+	  htmlFor={label}
+>
+	  {label}
+	  </label>
+	  <input
+	  {...register(label,validation)}
+    defaultValue={defaultValue}
+	  placeholder={label}
+	  type={type}
+	  id={label}
+	  name={label}
+	  {...rest}
+	   />
+	  {errors[label] && <p className="text-red-500">{errors[label].message}</p>}
+	  </div>
+  )}
+
+  const LabelSelect = ({ label, options, defaultValue, validation, ...rest }) => {
+    return (
+      <div className='col-span-6 sm:col-span-3'>
+      <label
+      htmlFor={label}
+      className='block text-sm font-medium text-gray-700'>
+      {label}
+      </label>
+      <select {...register(label, validation)} defaultValue={defaultValue} {...rest} id="{label}" name="{label}">
+      {places.map(value => (
+        <option key={value.id} value={value.name}>
+        {value.name}
+        </option>
+      ))}
+      </select>
+      {errors[label] && <p className="text-red-500">{errors[label].message}</p>}
+      </div>
+    );
+  }
+
+
+  const onSubmit = (data) => {
+    console.log(JSON.stringify(data));
+    const {user, place, amount, date} = data;
+    onSaveTransaction(user, place,parseInt(amount), date);
+    reset();
   };
 
 
@@ -35,55 +74,12 @@ export default function AddTransactionForm({places, onSaveTransaction }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="m-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="m-5">
        <div className="grid grid-cols-6 gap-6">
-         <div className="col-span-6 sm:col-span-3">
-           <label htmlFor="user">user</label>
-           <input
-           value={user}
-           onChange={(e) => setUser(e.target.value)}
-             type="text"
-             placeholder="user"
-             name="user" id="user"
-             required
-           />
-         </div>
-         <div className='col-span-6 sm:col-span-3'>
-           <label htmlFor='date'>date</label>
-           <input
-           value={toDateInputString(date)}
-           onChange={(e) => setDate(e.target.value)}
-             type='date'
-             placeholder='date'
-             name='date' id='date'
-           />
-         </div>
-         <div className="col-span-6 sm:col-span-3">
-           <label htmlFor="place">place</label>
-           <select
-             value={place}
-             onChange={(e) => setPlace(e.target.value)}
-             name="place" id="place"
-             required
-           >
-             {places.map((p, index) => (
-               <option key={index} value={p.name}>
-                 {p.name}
-               </option>
-             ))}
-           </select>
-         </div>
-         <div className="col-span-6 sm:col-span-3">
-           <label htmlFor="amount">amount</label>
-           <input                           
-             value={amount}
-             onChange={(e) => setAmount(e.target.value)}
-               type="number"
-               placeholder="amount"
-               name="amount" id="amount"
-               required
-             />
-         </div>
+       <LabelInput label="user" type="text" defaultValue="" validation={{required: 'this is required',minLength: {value: 2,message: 'Min length is 2'}}}/>
+			<LabelInput label="date" type="date"  defaultValue={toDateInputString(new Date())} validation={{required: 'this is required'}} />
+			<LabelSelect label="place" options={places} defaultValue="hogent" validation={{required:'This is required'}}/> 
+			<LabelInput label="amount" type="number" defaultValue="0" validation={{valueAsNumber:true, required:'this is required', min:{value: 1, message :'min 1'}, max:{value:5000, message : 'max 5000'}}}/> 
          <div className="col-span-6 sm:col-span-3">
              <div className="flex justify-end">
                <button type="submit">Save</button>

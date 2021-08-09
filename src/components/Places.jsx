@@ -13,7 +13,7 @@ const Place = ({ id, name, rating, onRate }) => {
   );
 };
 
-export default function Places({ places = [] , onRate}) {
+export default React.memo (function Places({ places = [] , onRate}) {
   console.log("render places");
   return (
     <div className="flex flex-wrap">
@@ -26,5 +26,5 @@ export default function Places({ places = [] , onRate}) {
         ))}
     </div>
   );
-}
+})
 
