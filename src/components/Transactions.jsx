@@ -11,8 +11,8 @@ function Transaction({
 	return (
 		<tr>
 			<td className="border w-1/4 px-4 py-2">{new Date(date).toLocaleDateString()}</td>
-			<td className="border w-1/4 px-4 py-2">{user}</td>
-			<td className="border w-1/4 px-4 py-2">{place}</td>
+			<td className="border w-1/4 px-4 py-2">{user.firstName} {user.lastName}</td>
+			<td className="border w-1/4 px-4 py-2">{place.name}</td>
 			<td className="border w-1/4 px-4 py-2">{amount} &euro;</td>
 			<td className="border w-1/4 px-4 py-2">
 				<button>

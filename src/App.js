@@ -4,20 +4,23 @@ import React, {
   useMemo,
   useCallback
 } from "react";
+import axios from 'axios';
 import Transactions from './components/Transactions';
 import AddTransactionForm from './components/AddTransactionForm';
 import Places from './components/Places';
 import {
-  TRANSACTION_DATA,
   PLACE_DATA
 } from './mock-data';
+import { useEffect } from 'react';
 
 function App() {
   const [places, setPlaces] = useState(PLACE_DATA);
-  const [transactions, setTransactions] = useState(TRANSACTION_DATA);
+  const [transactions, setTransactions] = useState([]);
   const [text, setText] = useState('');
   const [search, setSearch] = useState('');
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState()
+  
   const ratePlace = useCallback((id, rating) => {
     const newPlaces = places.map(p => p.id === id ? {
       ...p,
@@ -44,9 +47,26 @@ function App() {
 
   const filteredTransactions = useMemo(() => transactions.filter((t) => {
     console.log("filtering...");
-    return t.place.toLowerCase().includes(search.toLowerCase());
+    return t.place.name.toLowerCase().includes(search.toLowerCase());
   }), [transactions, search])
 
+useEffect(()=> {
+  async function fetchData(){
+  try {
+    setError();
+    setLoading(true)
+    const {data}= await axios.get(
+      `http://localhost:9000/api/transactions?limit=25&offset=0`
+    );
+    setTransactions(data.data);
+    setLoading(false);
+  } catch (error) {
+    setError(error);
+  }
+};
+fetchData();
+}
+, []);
 
   /*
     useEffect(() => {
@@ -55,6 +75,9 @@ function App() {
     return t.place.toLowerCase().includes(search.toLowerCase())}), [transactions]})
     */
 
+    if (loading) return <h1>Loading...</h1>;
+    if (error) return <pre>{JSON.stringify(error, null, 2)}</pre>
+    if (!transactions) return null;
   console.log("render App")
   return (   
       <div className="App">
