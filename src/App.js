@@ -1,25 +1,25 @@
 import './App.css';
 import React, {
   useState,
-  useMemo,
+  useEffect,
   useCallback
 } from "react";
-import axios from 'axios';
+import {useFetch} from './hooks/useFetch';
 import Transactions from './components/Transactions';
 import AddTransactionForm from './components/AddTransactionForm';
 import Places from './components/Places';
 import {
   PLACE_DATA
 } from './mock-data';
-import { useEffect } from 'react';
+
 
 function App() {
   const [places, setPlaces] = useState(PLACE_DATA);
-  const [transactions, setTransactions] = useState([]);
+
   const [text, setText] = useState('');
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState()
+  const {loading, data:transactions, error} = useFetch('http://localhost:9000/api/transactions?limit=100&offset=0' );
+  const [filteredTransactions, setFilteredTransactions]=useState();
   
   const ratePlace = useCallback((id, rating) => {
     const newPlaces = places.map(p => p.id === id ? {
@@ -40,35 +40,24 @@ function App() {
       },
       ...transactions,
     ]; // newest first
-    setTransactions(newTransactions);
+    //setTransactions(newTransactions);
     console.log("newtransactions", JSON.stringify(newTransactions));
     console.log("transactions", JSON.stringify(transactions));
   };
 
+  /*
   const filteredTransactions = useMemo(() => transactions.filter((t) => {
-    console.log("filtering...");
     return t.place.name.toLowerCase().includes(search.toLowerCase());
   }), [transactions, search])
 
-useEffect(()=> {
-  async function fetchData(){
-  try {
-    setError();
-    setLoading(true)
-    const {data}= await axios.get(
-      `http://localhost:9000/api/transactions?limit=25&offset=0`
-    );
-    setTransactions(data.data);
-    setLoading(false);
-  } catch (error) {
-    setError(error);
-  }
-};
-fetchData();
-}
-, []);
+*/
+useEffect(() => {
+if (!transactions) return;
+setFilteredTransactions(transactions.filter((t) => {
+  return t.place.name.toLowerCase().includes(search.toLowerCase());
+}))}, [transactions, search])
 
-  /*
+ /*
     useEffect(() => {
       transactions.filter((t) => {
     console.log("filtering...")
