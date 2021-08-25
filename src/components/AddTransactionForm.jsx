@@ -1,15 +1,56 @@
 
 import { useForm } from 'react-hook-form';
+import { TransactionsContext } from '../contexts/TransactionProvider';
+import { PlacesContext } from '../contexts/PlacesProvider';
+import { useContext , useEffect} from 'react';
 
+export default function AddTransactionForm() {
 
- 
-
-export default function AddTransactionForm({places, onSaveTransaction }) {
-
-
-	const {register, handleSubmit, formState: { errors }, reset} = useForm();
-
+  const {register, handleSubmit, formState: { errors }, reset, setValue} = useForm();
+  const {
+		currentTransaction,
+		setCurrentTransaction,
+		createOrUpdateTransaction,
+	} = useContext(TransactionsContext);
+  const {
+		places
+	} = useContext(PlacesContext);
   
+
+  useEffect(() => {
+		if (
+			// check on non-empty object
+			currentTransaction &&
+			(Object.keys(currentTransaction).length !== 0 ||
+				currentTransaction.constructor !== Object)
+		) {
+			const dateAsString = toDateInputString(currentTransaction.date);
+			console.log(dateAsString);
+			setValue('date', dateAsString);
+			setValue('user', currentTransaction.user.firstName + ' ' + currentTransaction.user.lastName);
+			setValue('place', currentTransaction.place.name);
+			setValue('amount', currentTransaction.amount);
+		} else {
+			reset();
+		}
+	}, [currentTransaction, setValue, reset]);
+
+	const onSubmit = (data) => {
+		createOrUpdateTransaction({
+			id: currentTransaction?.id,
+			user: data.user,
+			place: places.find(p=>p.name===data.place).id,
+			amount: data.amount,
+			date: data.date,
+		})
+			.then(() => setCurrentTransaction(null))
+			.catch(console.error);
+	};
+
+	const cancel = () => {
+		setCurrentTransaction(null);
+	};
+
 const LabelInput = ({ label , type , defaultValue, validation, ...rest }) => {
 	return (
 	<div className='col-span-6 sm:col-span-3'>
@@ -39,7 +80,7 @@ const LabelInput = ({ label , type , defaultValue, validation, ...rest }) => {
       className='block text-sm font-medium text-gray-700'>
       {label}
       </label>
-      <select {...register(label, validation)} defaultValue={defaultValue} {...rest} id="{label}" name="{label}">
+      <select {...register(label, validation)} defaultValue={defaultValue} {...rest} id={label} name={label}>
       {places.map(value => (
         <option key={value.id} value={value.name}>
         {value.name}
@@ -50,14 +91,6 @@ const LabelInput = ({ label , type , defaultValue, validation, ...rest }) => {
       </div>
     );
   }
-
-
-  const onSubmit = (data) => {
-    console.log(JSON.stringify(data));
-    const {user, place, amount, date} = data;
-    onSaveTransaction(user, place,parseInt(amount), date);
-    reset();
-  };
 
 
   
@@ -78,11 +111,13 @@ const LabelInput = ({ label , type , defaultValue, validation, ...rest }) => {
        <div className="grid grid-cols-6 gap-6">
        <LabelInput label="user" type="text" defaultValue="" validation={{required: 'this is required',minLength: {value: 2,message: 'Min length is 2'}}}/>
 			<LabelInput label="date" type="date"  defaultValue={toDateInputString(new Date())} validation={{required: 'this is required'}} />
-			<LabelSelect label="place" options={places} defaultValue="hogent" validation={{required:'This is required'}}/> 
+			<LabelSelect label="place" options={places} validation={{required:'This is required'}}/> 
 			<LabelInput label="amount" type="number" defaultValue="0" validation={{valueAsNumber:true, required:'this is required', min:{value: 1, message :'min 1'}, max:{value:5000, message : 'max 5000'}}}/> 
          <div className="col-span-6 sm:col-span-3">
              <div className="flex justify-end">
-               <button type="submit">Save</button>
+               <button type="submit">{currentTransaction?.id ? 'Save Transaction' : 'Add Transaction'}</button>
+               {currentTransaction?.id ? (
+						<button onClick={cancel}>Cancel</button>) : ('')}
              </div>
            </div>
          </div>

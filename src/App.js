@@ -8,9 +8,11 @@ import {useFetch} from './hooks/useFetch';
 import Transactions from './components/Transactions';
 import AddTransactionForm from './components/AddTransactionForm';
 import Places from './components/Places';
+import { TransactionsProvider } from './contexts/TransactionProvider';
 import {
   PLACE_DATA
 } from './mock-data';
+import { PlacesProvider } from './contexts/PlacesProvider';
 
 
 function App() {
@@ -69,14 +71,18 @@ setFilteredTransactions(transactions.filter((t) => {
     if (!transactions) return null;
   console.log("render App")
   return (   
-      <div className="App">
-        <AddTransactionForm places={places} onSaveTransaction={createTransaction} />
+      <div>
+      <PlacesProvider>
+      <TransactionsProvider>
+        <AddTransactionForm />
         <div className="m-5 flex">
          <input type="search" value={text} onChange={(e) => setText(e.target.value)} className="flex-1" placeholder="search" />
           <button type="button" onClick={()=>setSearch(text)}>Search</button>
         </div>
         <Transactions transactions={filteredTransactions}/>
+        </TransactionsProvider>
         <Places places={places} onRate={ratePlace}/>
+        </PlacesProvider>
       </div>
   );
 }
