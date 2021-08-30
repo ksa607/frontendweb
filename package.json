@@ -42,8 +42,10 @@
   },
   "devDependencies": {
     "autoprefixer": "^9",
+    "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.1",
+    "eslint-plugin-react": "^7.25.1",
     "husky": "^7.0.2",
     "lint-staged": "^11.1.2",
     "postcss": "^7",
@@ -53,16 +55,26 @@
   "prettier": {
     "printWidth": 90,
     "bracketSpacing": false,
-    "trailingComma": "es5"
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "singleQuote": true,
+    "jsxSingleQuote": true,
+    "jsxBracketSameLine": true,
+    "allowParens": "always"
   },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
     },
-  
-      "lint-staged": {
-        "*.+(js|jsx)": ["eslint --fix", "git add"],
-        "*.+(json|css|md)": ["prettier --write", "git add"]
-      }
+    "lint-staged": {
+      "*.+(js|jsx)": [
+        "eslint --fix",
+        "git add"
+      ],
+      "*.+(json|css|md)": [
+        "prettier --write",
+        "git add"
+      ]
+    }
   }
 }

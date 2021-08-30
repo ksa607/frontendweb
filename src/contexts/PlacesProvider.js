@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import config from '../config.json';
 
@@ -10,12 +10,11 @@ export const PlacesProvider = (props) => {
 
   const refreshPlaces = useCallback(async () => {
     try {
-      const { data } = await axios.get(
-        `${config.base_url}places`
-      );
+      const { data } = await axios.get(`${config.base_url}places`);
       setPlaces(data.data);
       return data.data;
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }, []);

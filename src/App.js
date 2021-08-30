@@ -1,7 +1,5 @@
-import React, {
-  useState,
-} from "react";
-import Transactions from './components/Transactions';
+import React, { useState } from "react";
+import Transactions from "./components/Transactions";
 import AddTransactionForm from './components/AddTransactionForm';
 import Places from './components/Places';
 import { TransactionsProvider } from './contexts/TransactionProvider';
