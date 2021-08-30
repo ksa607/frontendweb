@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import config from '../config.json';
 
@@ -8,7 +8,7 @@ export const TransactionsProvider = (props) => {
 	const [currentTransaction, setCurrentTransaction] = useState({});
 	const [transactions, setTransactions] = useState([]);
 	const [error, setError] = useState();
-	const [loading, setLoading] = useState(false); //error state of throw error
+	const [loading, setLoading] = useState(false);
 
 	const refreshTransactions = useCallback(async () => {
 		try {
@@ -19,10 +19,9 @@ export const TransactionsProvider = (props) => {
 			);
 			setTransactions(data.data);
 			setLoading(false);
-			return data.data;
 		} catch (error) {
 			setLoading(false);
-			throw error;
+			setError(error)
 		}
 	}, []);
 
@@ -30,37 +29,35 @@ export const TransactionsProvider = (props) => {
 		if (transactions?.length === 0) {
 			refreshTransactions();
 		}
-	}, [refreshTransactions, transactions]);
+	}, [transactions, refreshTransactions]);
 
 	const createOrUpdateTransaction = async ({
 		id,
-		userId,
 		placeId,
 		amount,
 		date,
 	}) => {
-		let data = { userId, placeId, amount, date };
-		let method = 'post';
+		setError();
+		let data = {  placeId, amount, date };
+		let method = id? 'put' :  'post';
+		let url = `${config.base_url}transactions/${id??''}`;
+		
 		try {
-			if (id) {
-				data = { ...data, id };
-				method = 'put';
-			}
 			const { changedTransaction } = await axios({
 				method,
-				url: `${config.base_url}transactions`,
+				url,
 				data,
 			});
 			await refreshTransactions();
 			return changedTransaction;
 		} catch (error) {
-			console.error(error);
-			throw error;
+			setError(error);
 		}
 	};
 
 	const deleteTransaction = async ({ id }) => {
 		try {
+			setError();
 			const { data } = await axios({
 				method: 'delete',
 				url: `${config.base_url}transactions/${id}`,
@@ -68,17 +65,20 @@ export const TransactionsProvider = (props) => {
 			refreshTransactions();
 			return data;
 		} catch (error) {
-			console.error(error);
-			throw error;
+			setError(error);
 		}
 	};
+
+	const setTransactionToUpdate=(id)=>{
+		setCurrentTransaction((id===null)?{}:transactions.find(t=>t.id===id));
+	}
 
 	return (
 		<TransactionsContext.Provider
 			value={{
 				// currentTransaction is the one being shown in the form
-				currentTransaction,
-				setCurrentTransaction,
+				currentTransaction, error, loading,
+				setTransactionToUpdate,
 				// state pertaining all transactions
 				transactions, // access to transactions
 				deleteTransaction, // delete one

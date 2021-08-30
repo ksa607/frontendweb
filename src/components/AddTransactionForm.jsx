@@ -9,7 +9,7 @@ export default function AddTransactionForm() {
   const {register, handleSubmit, formState: { errors }, reset, setValue} = useForm();
   const {
 		currentTransaction,
-		setCurrentTransaction,
+		setTransactionToUpdate,
 		createOrUpdateTransaction,
 	} = useContext(TransactionsContext);
   const {
@@ -24,10 +24,10 @@ export default function AddTransactionForm() {
 			(Object.keys(currentTransaction).length !== 0 ||
 				currentTransaction.constructor !== Object)
 		) {
-			const dateAsString = toDateInputString(currentTransaction.date);
+			const dateAsString = new Date(currentTransaction.date);
 			console.log(dateAsString);
 			setValue('date', dateAsString);
-			setValue('user', currentTransaction.user.firstName + ' ' + currentTransaction.user.lastName);
+			setValue('user', currentTransaction.user.name);
 			setValue('place', currentTransaction.place.name);
 			setValue('amount', currentTransaction.amount);
 		} else {
@@ -35,20 +35,20 @@ export default function AddTransactionForm() {
 		}
 	}, [currentTransaction, setValue, reset]);
 
-	const onSubmit = (data) => {
-		createOrUpdateTransaction({
-			id: currentTransaction?.id,
-			user: data.user,
-			place: places.find(p=>p.name===data.place).id,
+	const onSubmit = (data) =>{
+		console.log(currentTransaction);
+				createOrUpdateTransaction({
+			id: currentTransaction.id,
+			placeId: places.find(p=>p.name===data.place).id,
 			amount: data.amount,
-			date: data.date,
+			date: new Date(data.date),
 		})
-			.then(() => setCurrentTransaction(null))
+			.then(() => setTransactionToUpdate(null))
 			.catch(console.error);
 	};
 
 	const cancel = () => {
-		setCurrentTransaction(null);
+		setTransactionToUpdate();
 	};
 
 const LabelInput = ({ label , type , defaultValue, validation, ...rest }) => {

@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState, useEffect} from 'react';
 import { IoTrashOutline, IoPencil } from 'react-icons/io5';
 import { TransactionsContext } from '../contexts/TransactionProvider';
 
@@ -7,14 +7,13 @@ function Transaction({
 	date,
 	amount,
 	user,
-	place, 	
-    updateTransaction,
-	deleteTransaction,}) {
-
+	place
+}) {
+	const { setTransactionToUpdate, deleteTransaction } = useContext(TransactionsContext);
     const handleUpdate = (ev) => {
             ev.stopPropagation();
             ev.preventDefault();
-            updateTransaction({ id, user, place, amount, date });
+            setTransactionToUpdate(id);
         };
     
     const handleRemove = (ev) => {
@@ -45,18 +44,28 @@ function Transaction({
 
 const MemoizedTransaction =  React.memo(Transaction);
 
-export default function Transactions() {
-    const { transactions, deleteTransaction, setCurrentTransaction } = useContext(TransactionsContext);
+export default function Transactions({searchTerm}) {
+    const { transactions, error, loading } = useContext(TransactionsContext);
+	const [filteredTransactions, setFilteredTransactions]=useState();
+
+	useEffect(() => {
+		if (!transactions) return;
+		setFilteredTransactions(transactions.filter((t) => {
+		  return t.place.name.toLowerCase().includes(searchTerm.toLowerCase());
+		}))}, [transactions, searchTerm])
+
+	if (loading) return (<h1>Loading...</h1>);
+    if (error) return <pre>{JSON.stringify(error, null, 2)}</pre>
+    if (!filteredTransactions) return null;
+
     return (
 		<table className="table-fixed m-auto">
 			<tbody>
-				{transactions.map((trans, i) => {
+				{filteredTransactions.map((trans, i) => {
 					return (
 						<MemoizedTransaction
 							key={i}
 							{...trans}
-                            updateTransaction={setCurrentTransaction}
-							deleteTransaction={deleteTransaction}
 						/>
 					);
 				})}
